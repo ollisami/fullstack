@@ -1,19 +1,23 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import axios from 'axios'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 
 const App = () => {
 
-  const [ persons, setPersons] = useState([
-    { 
-      name: 'Arto Hellas',
-      phone: '12324567'
-    }
-  ]) 
+  const [ persons, setPersons] = useState([]) 
   const [ newName, setNewName ] = useState('')
   const [ newPhone, setNewPhone ] = useState('')
   const [ filter, setFilter ] = useState('')
+
+  useEffect(() => {
+    axios
+      .get('http://localhost:3001/persons')
+      .then(response => {
+        setPersons(persons.concat(response.data))
+      })
+  }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -21,7 +25,8 @@ const App = () => {
     if (!persons.some(person => person.name === newName)) {
       const personObject = {
         name: newName,
-        phone: newPhone
+        number: newPhone,
+        id: persons.length+1
       }
       setPersons(persons.concat(personObject))
     } else {
@@ -42,7 +47,7 @@ const App = () => {
   const handleFilterChange = (event) => {
     setFilter(event.target.value)
   }
-
+  console.table(persons)
   return (
     <div>
       <h2>Puhelinluettelo</h2>
