@@ -47,7 +47,7 @@ const App = () => {
   const handleFilterChange = (event) => {
     setFilter(event.target.value)
   }
-  console.table(persons)
+
   return (
     <div>
       <h2>Puhelinluettelo</h2>
