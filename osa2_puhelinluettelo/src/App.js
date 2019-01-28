@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import axios from 'axios'
+import personService from './services/personService'
 import Filter from './components/Filter'
 import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
@@ -12,25 +12,33 @@ const App = () => {
   const [ filter, setFilter ] = useState('')
 
   useEffect(() => {
-    axios
-      .get('http://localhost:3001/persons')
-      .then(response => {
-        setPersons(persons.concat(response.data))
+    personService
+      .getAll()
+      .then(initialPersons => {
+        setPersons(initialPersons)
       })
   }, [])
 
   const addPerson = (event) => {
     event.preventDefault()
 
-    if (!persons.some(person => person.name === newName)) {
-      const personObject = {
-        name: newName,
-        number: newPhone,
-        id: persons.length+1
-      }
-      setPersons(persons.concat(personObject))
-    } else {
-      alert(`${newName} on jo luettelossa`);
+    const personObject = {
+      name: newName,
+      number: newPhone,
+    }
+    const current = persons.find(person => person.name === newName)
+    if (!current) {
+      personService
+        .create(personObject)
+        .then(returnedPerson => {
+          setPersons(persons.concat(returnedPerson))
+      })
+    } else if (window.confirm(`${newName} on jo luettelossa, korvataanko vanha numero uudella?`)) {
+        personService
+          .update(current.id, personObject)
+          .then(returnedPerson => {
+            setPersons(persons.map( person => person.id !== current.id ? person : returnedPerson))
+      })
     }
     setNewName('')
     setNewPhone('')
@@ -48,6 +56,19 @@ const App = () => {
     setFilter(event.target.value)
   }
 
+  const removePerson = id => {
+    const p = persons.find(person => {
+      return person.id === id
+    })
+    if (p && window.confirm(`Poistetaanko ${p.name}?`)) {
+      personService
+        .remove(id)
+        .then(initialPersons => {
+          setPersons(initialPersons)
+        })
+    }
+  }
+
   return (
     <div>
       <h2>Puhelinluettelo</h2>
@@ -63,7 +84,11 @@ const App = () => {
       />
 
       <h3>Numerot</h3>
-      <Persons persons={persons} filter={filter}/>
+      <Persons
+        persons={persons}
+        filter={filter}
+        removePerson={removePerson}
+      />
     </div>
   )
 

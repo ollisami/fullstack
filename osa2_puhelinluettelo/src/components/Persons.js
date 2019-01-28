@@ -10,7 +10,13 @@ const filteredPersons = ({persons,filter}) => (
 const listPersons = props => (
     filteredPersons(props)
     .map(person =>
-        <li key={person.id}>{person.name} {person.number}</li>
+        <li key={person.id}>
+            {person.name}
+            &nbsp;
+            {person.number}
+            &nbsp;
+            <button onClick={() => props.removePerson(person.id)}>poista</button>
+        </li>
     )
 )
 
